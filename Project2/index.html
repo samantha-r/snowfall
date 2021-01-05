@@ -1,0 +1,109 @@
+<!doctype html>
+
+<html>
+  <!--
+   Samantha Reizes
+   Developed using example code from: https://pixijs.io/examples/#/demos-basic/blendmodes.js for motion and wrapping.
+-->  
+<head>
+  <meta charset="utf-8">
+  <title>Quiet Snowfall</title>
+</head>
+  <script src="pixi/pixi.min.js"></script>
+<body>
+  <script type="text/javascript">
+
+    const loader = PIXI.Loader.shared; 
+    const graphics = PIXI.Graphics;
+    const words = PIXI.Text;       
+    let type = "WebGL"
+    if(!PIXI.utils.isWebGLSupported()){
+      type = "canvas"
+    }
+    
+    
+    const app = new PIXI.Application();
+    
+    document.body.appendChild(app.view);
+
+    // background
+    const background = PIXI.Sprite.from('images/tree.png');
+    background.width = app.screen.width;
+    background.height = app.screen.height;
+    app.stage.addChild(background);
+    
+    // pile of snow  
+    snowpile = new graphics();
+    snowpile.beginFill(0xffffff);
+    snowpile.drawRect(0,0,800,700);
+    snowpile.endFill();
+    snowpile.x = 0;
+    snowpile.y = 600;
+    app.stage.addChild(snowpile);     
+
+    const flakeArray = [];
+
+    const totalflakes = 60;
+
+    for (let i = 0; i < totalflakes; i++) {
+        
+        //snowflakes
+        const flake = PIXI.Sprite.from('images/snowflake.png');
+
+        flake.anchor.set(0.5);
+        flake.scale.set(0.8 + Math.random() * 0.8);
+        flake.x = Math.floor(Math.random() * app.screen.width);
+        flake.y = Math.floor(Math.random() * app.screen.height);
+        flake.blendMode = PIXI.BLEND_MODES.ADD;
+
+        flake.direction = Math.random() * Math.PI / 6;
+
+        flake.turningSpeed = Math.random() - 0.4;
+        // random speed
+        flake.speed = 3 + Math.random() * 2;
+        
+        flakeArray.push(flake);
+        app.stage.addChild(flake);
+    }
+
+    // create a bounding box
+    const flakeBoundsPadding = 100;
+
+    const flakeBounds = new PIXI.Rectangle(
+        -flakeBoundsPadding,
+        -flakeBoundsPadding,
+        app.screen.width + flakeBoundsPadding * 2,
+        app.screen.height + flakeBoundsPadding * 2,
+    );
+
+    app.ticker.add(() => {
+        
+        snowpile.y += -0.10 + 1/(snowpile.y + 10);
+        
+        // iterate through the flakes and update the positions
+        for (let i = 0; i < flakeArray.length; i++) {
+            const flake = flakeArray[i];
+            flake.direction += flake.turningSpeed * 0.01;
+            flake.x += Math.sin(flake.direction) * flake.speed;
+            flake.y += Math.cos(flake.direction) * flake.speed;
+            flake.rotation = -flake.direction - Math.PI / 2;
+
+            // wrap the flakes by testing their bounds...
+            if (flake.x < flakeBounds.x) {
+                flake.x += flakeBounds.width;
+            } else if (flake.x > flakeBounds.x + flakeBounds.width) {
+                flake.x -= flakeBounds.width;
+            }
+
+            if (flake.y < flakeBounds.y) {
+                flake.y += flakeBounds.height;
+            } else if (flake.y > flakeBounds.y + flakeBounds.height) {
+                flake.y -= flakeBounds.height;
+            }
+        }
+    });  
+    
+      
+  </script>
+</body>
+</html>
